@@ -159,14 +159,6 @@ Trả về snapshot mới nhất của tất cả feeds.
 }
 ```
 
-**Implementation:**
-```js
-app.get('/api/sensor', (req, res) => {
-  res.json(latestData);
-});
-```
-
----
 
 ### Lấy giá trị của một feed cụ thể
 
@@ -196,17 +188,6 @@ GET /api/sensor/:feed
 }
 ```
 
-**Implementation:**
-```js
-app.get('/api/sensor/:feed', (req, res) => {
-  const feed = req.params.feed;
-  if (!FEEDS.includes(feed)) {
-    return res.status(404).json({ error: `Feed "${feed}" không tồn tại` });
-  }
-  res.json({ feed, value: latestData[feed], updatedAt: latestData.updatedAt });
-});
-```
-
 ---
 
 ### Lấy lịch sử dữ liệu của một feed
@@ -231,17 +212,7 @@ GET /api/sensor/:feed/history?limit=<n>
 ]
 ```
 
-**Implementation:**
-```js
-app.get('/api/sensor/:feed/history', (req, res) => {
-  const feed = req.params.feed;
-  const limit = parseInt(req.query.limit) || 20;
-  if (!FEEDS.includes(feed)) {
-    return res.status(404).json({ error: `Feed "${feed}" không tồn tại` });
-  }
-  res.json(history[feed].slice(0, limit));
-});
-```
+
 
 ---
 
@@ -282,19 +253,7 @@ Gửi lệnh xuống thiết bị thông qua MQTT (publish tới topic của fee
 }
 ```
 
-**Implementation:**
-```js
-app.post('/api/device/command', (req, res) => {
-  const { feed, command } = req.body;
-  if (!FEEDS.includes(feed)) {
-    return res.status(400).json({ error: `Feed "${feed}" không hợp lệ` });
-  }
-  const topic = `${AIO_USERNAME}/feeds/${feed}`;
-  client.publish(topic, String(command));
-  console.log(`🎮 Gửi lệnh → ${feed}: ${command}`);
-  res.json({ success: true, feed, command });
-});
-```
+
 
 ---
 
