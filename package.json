@@ -1,6 +1,7 @@
 {
   "name": "dadn",
   "version": "1.0.0",
+  "type": "module",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
@@ -9,5 +10,16 @@
   },
   "author": "duyquy",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "http": "^0.0.1-security",
+    "mongodb": "^7.1.1",
+    "mongoose": "^9.3.3",
+    "mqtt": "^5.15.1",
+    "nodemon": "^3.1.14",
+    "socket.io": "^4.8.3"
+  }
 }
