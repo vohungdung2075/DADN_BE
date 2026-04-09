@@ -23,9 +23,13 @@ const deviceSchema = new mongoose.Schema({
     },
 	isActive: {
 		type: Boolean,
-		default: true,
+		default: false,
 	},
-	lastActive: Date,
+
+	lastActive: {
+		type: Date,
+		default: null,
+	},
 
 	createdAt: {
 		type: Date,
