@@ -1,10 +1,14 @@
 import mongoose from "mongoose";
 
 const deviceSchema = new mongoose.Schema({
+	homeId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'homes',
+        required: true,
+    },
     feed: {
         type: String,
         required: true,
-        unique: true,
         trim: true,
     },
 	name: {
@@ -36,6 +40,8 @@ const deviceSchema = new mongoose.Schema({
 		default: Date.now,
 	},
 });
+
+deviceSchema.index({ homeId: 1, feed: 1 }, { unique: true });
 
 const Devices = mongoose.model("devices", deviceSchema);
 export default Devices;
