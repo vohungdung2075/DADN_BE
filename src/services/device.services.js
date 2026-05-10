@@ -17,8 +17,39 @@ const sendCommandToDevice = async (homeId, feed, command) => {
 
 	const topic = `${home.aioUsername}/feeds/${feed}`;
 
+	const normalizedFeed = String(feed).toLowerCase();
+	const isAutoLight = normalizedFeed.includes("auto-light");
+	const isAutoFan = normalizedFeed.includes("auto-fan");
+	const isRemote = normalizedFeed.includes("remote");
+	const isAuto = isAutoLight || isAutoFan || isRemote;
+	const isStandardActuator =
+		!isAuto &&
+		(normalizedFeed.includes("fan") ||
+			normalizedFeed.includes("light") ||
+			normalizedFeed.includes("servo") ||
+			normalizedFeed.includes("pir"));
+
+	const cmdStr = String(command).trim();
+	let mappedCommand;
+
+	if (isAuto) {
+		if (cmdStr === "2" || cmdStr === "0") {
+			mappedCommand = cmdStr;
+		} else {
+			throw new Error("DEVICE_INVALID_COMMAND");
+		}
+	} else if (isStandardActuator) {
+		if (cmdStr === "1" || cmdStr === "0") {
+			mappedCommand = cmdStr;
+		} else {
+			throw new Error("DEVICE_INVALID_COMMAND");
+		}
+	} else {
+		throw new Error("DEVICE_INVALID_COMMAND");
+	}
+
 	return new Promise((resolve, reject) => {
-		publishToFeed(homeId, topic, String(command), (err) => {
+		publishToFeed(homeId, topic, String(mappedCommand), (err) => {
 			if (err) {
 				if (err.message === "MQTT_HOME_CLIENT_NOT_FOUND") {
 					return reject(new Error("MQTT_HOME_CLIENT_NOT_FOUND"));
@@ -28,7 +59,7 @@ const sendCommandToDevice = async (homeId, feed, command) => {
 			resolve({
 				success: true,
 				feed,
-				command: String(command),
+				command: String(mappedCommand),
 			});
 		});
 	});

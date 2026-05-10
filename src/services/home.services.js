@@ -35,7 +35,9 @@ const getMembersByHome = async (homeId) => {
 		"username email role",
 	);
 
-	return memberships.map((membership) => ({
+	return memberships
+	.filter(membership => membership.userId !== null)
+	.map((membership) => ({
 		userId: membership.userId?._id,
 		username: membership.userId?.username,
 		email: membership.userId?.email,

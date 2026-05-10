@@ -92,7 +92,7 @@ const handleUpdateThresholds = async (req, res) => {
 	const { tempMax, tempMin, humidMax, humidMin } = req.body;
 
 	const providedFields = [tempMax, tempMin, humidMax, humidMin].filter(
-		(value) => value !== undefined,
+		(value) => value !== undefined && value !== null,
 	);
 
 	if (providedFields.length === 0) {
@@ -100,13 +100,20 @@ const handleUpdateThresholds = async (req, res) => {
 	}
 
 	for (const value of providedFields) {
-		if (typeof value !== "number" || Number.isNaN(value)) {
-			return res.status(400).json({ error: "Threshold values must be numbers" });
+		if ( value === "" || isNaN(Number(value))) {
+			return res.status(400).json({ error: "Threshold values must be valid numbers" });
 		}
 	}
 
+	const parsedUpdates = {
+		...(tempMax !== undefined && tempMax !== null && { tempMax: Number(tempMax) }),
+		...(tempMin !== undefined && tempMin !== null && { tempMin: Number(tempMin) }),
+		...(humidMax !== undefined && humidMax !== null && { humidMax: Number(humidMax) }),
+		...(humidMin !== undefined && humidMin !== null && { humidMin: Number(humidMin) }),
+	};
+
 	try {
-		const settings = await sensorServices.updateHomeThresholds(req.homeId, {tempMax, tempMin, humidMax, humidMin});
+		const settings = await sensorServices.updateHomeThresholds(req.homeId, parsedUpdates);
 
 		res.status(200).json({ message: "Update thresholds successfully", settings });
 	} catch (error) {

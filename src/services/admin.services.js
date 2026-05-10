@@ -5,6 +5,7 @@ import Devices from "../models/device.model.js";
 import DeviceLogs from "../models/deviceLog.model.js";
 import DeviceStates from "../models/deviceState.model.js";
 import { registerHomeMqttClient } from "../mqtt/mqttClient.js";
+import HomeSettings from "../models/homeSetting.model.js";
 
 const getAllUsers = async () => {
 	return await Users.find()
@@ -35,7 +36,10 @@ const createHome = async (homeData, ownerId) => {
 		}
 	}
 
-	return newHome;
+	const safeHome = newHome.toObject();
+    delete safeHome.aioKey;
+    delete safeHome.aioUsername;
+    return safeHome;
 };
 
 const deleteHome = async (homeId) => {
@@ -47,6 +51,7 @@ const deleteHome = async (homeId) => {
 		Devices.deleteMany({ homeId }),
 		DeviceLogs.deleteMany({ homeId }),
 		DeviceStates.deleteMany({ homeId }),
+		HomeSettings.deleteMany({ homeId }),
 	]);
 
 	return deletedHome;

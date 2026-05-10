@@ -26,7 +26,8 @@ const parseConfiguredFeedsFromHome = (home) => {
 const inferDeviceType = (feed) => {
 	const normalized = String(feed).toLowerCase();
 	if (normalized.includes("fan") || normalized.includes("light") ||
-		normalized.includes("servo") || normalized.includes("remote")) {
+		normalized.includes("servo") || normalized.includes("pir") ||
+		normalized.includes("remote")) {
 		return "actuator";
 	}
 	return "sensor";

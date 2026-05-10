@@ -9,12 +9,6 @@ const handleSendCommand = async (req, res) => {
 				.json({ error: "Feed and command are required" });
 		}
 
-		if (!["0", "1"].includes(String(command))) {
-			return res
-				.status(400)
-				.json({ error: 'Command must be "0" or "1"' });
-		}
-
 		const cmd = await deviceServices.sendCommandToDevice(
 			req.homeId,
 			feed,
@@ -48,6 +42,12 @@ const handleSendCommand = async (req, res) => {
 			return res
 				.status(503)
 				.json({ error: "MQTT client for this home is not connected" });
+		}
+
+		if (error.message === "DEVICE_INVALID_COMMAND") {
+			return res
+				.status(400)
+				.json({ error: "Invalid command for this device" });
 		}
 
 		res.status(500).json({ error: "Internal server error" });

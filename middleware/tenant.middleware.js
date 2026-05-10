@@ -17,7 +17,7 @@ const checkTenant = async (req, res, next) => {
         }
 
         req.homeId = homeId; 
-        req.user.tenantRole = isMember.role;
+        req.tenantRole = isMember.role;
 
         next();
     } catch (err) {
