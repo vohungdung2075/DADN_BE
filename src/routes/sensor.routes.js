@@ -1,6 +1,6 @@
 import express from "express";
 import sensorControllers from "../controllers/sensor.controllers.js";
-import authware from "../../middleware/authware.js";
+import authware from "../middleware/authware.js";
 
 const sensorRouter = express.Router();
 
