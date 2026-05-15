@@ -25,9 +25,7 @@ const handleAddMember = async (req, res) => {
 		res.status(200).json({ message: "Add member successfully" });
 	} catch (err) {
 		if (err.message === "INVALID_ROLE")
-			return res
-				.status(400)
-				.json({ error: "Role must be member or guest" });
+			return res.status(400).json({ error: "Role must be member" });
 		if (err.message === "USER_NOT_FOUND")
 			return res.status(404).json({ error: "User not found" });
 		if (err.message === "MEMBER_ALREADY_EXISTS")
@@ -67,9 +65,7 @@ const handleUpdateMemberRole = async (req, res) => {
 		});
 	} catch (err) {
 		if (err.message === "INVALID_ROLE")
-			return res
-				.status(400)
-				.json({ error: "Role must be member or guest" });
+			return res.status(400).json({ error: "Role must be member" });
 		if (err.message === "MEMBER_NOT_FOUND")
 			return res
 				.status(404)

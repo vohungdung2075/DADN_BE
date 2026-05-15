@@ -10,7 +10,7 @@ const getListHomesByUser = async (userId) => {
 };
 
 const addMemberToHome = async (homeId, email, role) => {
-	const allowedRoles = ["member", "guest"];
+	const allowedRoles = ["member"];
 	if (!allowedRoles.includes(role)) throw new Error("INVALID_ROLE");
 
 	const targetUser = await Users.findOne({ email });
@@ -36,19 +36,19 @@ const getMembersByHome = async (homeId) => {
 	);
 
 	return memberships
-	.filter(membership => membership.userId !== null)
-	.map((membership) => ({
-		userId: membership.userId?._id,
-		username: membership.userId?.username,
-		email: membership.userId?.email,
-		systemRole: membership.userId?.role,
-		tenantRole: membership.role,
-		addedAt: membership.addedAt,
-	}));
+		.filter((membership) => membership.userId !== null)
+		.map((membership) => ({
+			userId: membership.userId?._id,
+			username: membership.userId?.username,
+			email: membership.userId?.email,
+			systemRole: membership.userId?.role,
+			tenantRole: membership.role,
+			addedAt: membership.addedAt,
+		}));
 };
 
 const updateMemberRoleInHome = async (homeId, userId, role) => {
-	const allowedRoles = ["member", "guest"];
+	const allowedRoles = ["member"];
 	if (!allowedRoles.includes(role)) throw new Error("INVALID_ROLE");
 
 	const membership = await HomeMembers.findOne({ homeId, userId });
@@ -68,4 +68,10 @@ const removeMemberFromHome = async (homeId, userId) => {
 	await HomeMembers.deleteOne({ _id: membership._id });
 };
 
-export default { getListHomesByUser, addMemberToHome, getMembersByHome, updateMemberRoleInHome, removeMemberFromHome };
+export default {
+	getListHomesByUser,
+	addMemberToHome,
+	getMembersByHome,
+	updateMemberRoleInHome,
+	removeMemberFromHome,
+};

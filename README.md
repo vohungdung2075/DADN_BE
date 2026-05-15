@@ -8,7 +8,7 @@ Backend Node.js cho hệ thống nhà thông minh, dùng MQTT, Adafruit IO, Mong
 - Tích hợp MQTT với Adafruit IO để giao tiếp độ trễ thấp giữa server và phần cứng.
 - Lưu dữ liệu người dùng, home, thiết bị, trạng thái thiết bị và lịch sử thao tác trong MongoDB.
 - Phát realtime event theo từng home bằng Socket.IO, bao gồm online presence và cảnh báo ngưỡng.
-- Hỗ trợ phân quyền theo vai trò: `owner`, `member`, `guest`, và `admin`.
+- Hỗ trợ phân quyền theo vai trò: `owner`, `member`, và `admin`.
 
 ## Công nghệ sử dụng
 

@@ -22,7 +22,6 @@ Authorization: Bearer <token>
 - Tenant role (trong từng home):
     - `owner`: quản lý member + thresholds + quyền cấu hình nhà.
     - `member`: điều khiển thiết bị theo quyền.
-    - `guest`: quyền hạn thấp hơn (tùy UI/logic sử dụng).
 
 ---
 
@@ -205,7 +204,7 @@ Body:
 
 ```json
 {
-	"role": "guest"
+	"role": "member"
 }
 ```
 
@@ -570,48 +569,48 @@ Hệ thống automation cho phép tạo rules tự động dựa trên sensor da
 
 ```json
 {
-  "_id": "rule_id",
-  "homeId": "home_id",
-  "name": "Tên rule",
-  "description": "Mô tả (optional)",
-  "enabled": true,
-  "trigger": {
-    "type": "sensor|alert|time",
-    // sensor
-    "feed": "iot-temp",
-    // alert
-    "feed": "iot-temp",
-    "direction": "above_max|below_min",
-    // time
-    "cron": "0 9 * * 1-5"
-  },
-  "conditions": [
-    {
-      "field": "value",
-      "operator": "gt|gte|lt|lte|eq|neq|between|contains|exists",
-      "value": 30,
-      "valueMax": 40
-    }
-  ],
-  "actions": [
-    {
-      "type": "device_command|notify|webhook|delay",
-      // device_command
-      "feed": "iot-fan",
-      "command": "1",
-      // notify
-      "message": "Nhiệt độ {{value}}°C quá cao!",
-      // webhook
-      "url": "https://example.com/hook",
-      "method": "POST",
-      "body": {"alert": "high_temp"},
-      // delay
-      "seconds": 5
-    }
-  ],
-  "cooldown_seconds": 60,
-  "createdAt": "2026-05-14T...",
-  "updatedAt": "2026-05-14T..."
+	"_id": "rule_id",
+	"homeId": "home_id",
+	"name": "Tên rule",
+	"description": "Mô tả (optional)",
+	"enabled": true,
+	"trigger": {
+		"type": "sensor|alert|time",
+		// sensor
+		"feed": "iot-temp",
+		// alert
+		"feed": "iot-temp",
+		"direction": "above_max|below_min",
+		// time
+		"cron": "0 9 * * 1-5"
+	},
+	"conditions": [
+		{
+			"field": "value",
+			"operator": "gt|gte|lt|lte|eq|neq|between|contains|exists",
+			"value": 30,
+			"valueMax": 40
+		}
+	],
+	"actions": [
+		{
+			"type": "device_command|notify|webhook|delay",
+			// device_command
+			"feed": "iot-fan",
+			"command": "1",
+			// notify
+			"message": "Nhiệt độ {{value}}°C quá cao!",
+			// webhook
+			"url": "https://example.com/hook",
+			"method": "POST",
+			"body": { "alert": "high_temp" },
+			// delay
+			"seconds": 5
+		}
+	],
+	"cooldown_seconds": 60,
+	"createdAt": "2026-05-14T...",
+	"updatedAt": "2026-05-14T..."
 }
 ```
 
@@ -619,7 +618,7 @@ Hệ thống automation cho phép tạo rules tự động dựa trên sensor da
 
 - **sensor**: Trigger khi nhận MQTT data từ feed cụ thể.
 - **alert**: Trigger khi vượt ngưỡng (threshold) đã set.
-- **time**: Trigger theo cron schedule (ví dụ: "0 9 * * 1-5" = 9h sáng T2-T6).
+- **time**: Trigger theo cron schedule (ví dụ: "0 9 \* \* 1-5" = 9h sáng T2-T6).
 
 ### Condition Operators
 
@@ -660,15 +659,21 @@ Response:
 
 ```json
 [
-  {
-    "_id": "rule1",
-    "name": "Tự động bật quạt khi nóng",
-    "enabled": true,
-    "trigger": {"type": "alert", "feed": "iot-temp", "direction": "above_max"},
-    "conditions": [{"field": "value", "operator": "gt", "value": 30}],
-    "actions": [{"type": "device_command", "feed": "iot-fan", "command": "1"}],
-    "cooldown_seconds": 300
-  }
+	{
+		"_id": "rule1",
+		"name": "Tự động bật quạt khi nóng",
+		"enabled": true,
+		"trigger": {
+			"type": "alert",
+			"feed": "iot-temp",
+			"direction": "above_max"
+		},
+		"conditions": [{ "field": "value", "operator": "gt", "value": 30 }],
+		"actions": [
+			{ "type": "device_command", "feed": "iot-fan", "command": "1" }
+		],
+		"cooldown_seconds": 300
+	}
 ]
 ```
 
@@ -682,14 +687,14 @@ Body:
 
 ```json
 {
-  "name": "Bật đèn lúc 6h tối",
-  "trigger": {
-    "type": "time",
-    "cron": "0 18 * * *"
-  },
-  "actions": [
-    {"type": "device_command", "feed": "iot-light", "command": "1"}
-  ]
+	"name": "Bật đèn lúc 6h tối",
+	"trigger": {
+		"type": "time",
+		"cron": "0 18 * * *"
+	},
+	"actions": [
+		{ "type": "device_command", "feed": "iot-light", "command": "1" }
+	]
 }
 ```
 
@@ -714,7 +719,7 @@ DELETE /rules/:ruleId
 Response:
 
 ```json
-{"message": "Rule deleted"}
+{ "message": "Rule deleted" }
 ```
 
 ### Cách Test
@@ -775,10 +780,10 @@ Tạo rule với condition:
 
 ```json
 {
-  "name": "Hot Alert",
-  "trigger": {"type": "sensor", "feed": "iot-temp"},
-  "conditions": [{"field": "value", "operator": "gt", "value": 30}],
-  "actions": [{"type": "notify", "message": "HOT: {{value}}°C"}]
+	"name": "Hot Alert",
+	"trigger": { "type": "sensor", "feed": "iot-temp" },
+	"conditions": [{ "field": "value", "operator": "gt", "value": 30 }],
+	"actions": [{ "type": "notify", "message": "HOT: {{value}}°C" }]
 }
 ```
 
@@ -788,9 +793,9 @@ Test với value < 30 → không trigger, > 30 → trigger.
 
 ```json
 {
-  "name": "Test Device",
-  "trigger": {"type": "sensor", "feed": "iot-temp"},
-  "actions": [{"type": "device_command", "feed": "iot-fan", "command": "1"}]
+	"name": "Test Device",
+	"trigger": { "type": "sensor", "feed": "iot-temp" },
+	"actions": [{ "type": "device_command", "feed": "iot-fan", "command": "1" }]
 }
 ```
 
@@ -800,14 +805,16 @@ Kiểm tra console: `[DeviceCommand] ✓ iot-fan=1 (home:YOUR_HOME_ID)`
 
 ```json
 {
-  "name": "Webhook Test",
-  "trigger": {"type": "sensor", "feed": "iot-temp"},
-  "actions": [{
-    "type": "webhook",
-    "url": "https://webhook.site/YOUR_ID",
-    "method": "POST",
-    "body": {"home": "{{homeId}}", "temp": "{{value}}"}
-  }]
+	"name": "Webhook Test",
+	"trigger": { "type": "sensor", "feed": "iot-temp" },
+	"actions": [
+		{
+			"type": "webhook",
+			"url": "https://webhook.site/YOUR_ID",
+			"method": "POST",
+			"body": { "home": "{{homeId}}", "temp": "{{value}}" }
+		}
+	]
 }
 ```
 
@@ -837,10 +844,10 @@ Body:
 
 ```json
 {
-  "homeId": "home_id",
-  "feed": "iot-temp",
-  "value": "25.5",
-  "time": "2026-05-14T10:00:00.000Z"
+	"homeId": "home_id",
+	"feed": "iot-temp",
+	"value": "25.5",
+	"time": "2026-05-14T10:00:00.000Z"
 }
 ```
 
@@ -854,11 +861,11 @@ Body:
 
 ```json
 {
-  "homeId": "home_id",
-  "feed": "iot-temp",
-  "value": 36.2,
-  "threshold": 35,
-  "direction": "above_max"
+	"homeId": "home_id",
+	"feed": "iot-temp",
+	"value": 36.2,
+	"threshold": 35,
+	"direction": "above_max"
 }
 ```
 
@@ -877,23 +884,23 @@ GET /test/logs
 ### Lưu Ý Frontend
 
 - **UI Components**:
-  - List rules với toggle enable/disable.
-  - Form tạo rule: Select trigger type, add conditions, add actions.
-  - Cron builder cho time rules (sử dụng thư viện như react-cron-generator).
+    - List rules với toggle enable/disable.
+    - Form tạo rule: Select trigger type, add conditions, add actions.
+    - Cron builder cho time rules (sử dụng thư viện như react-cron-generator).
 
 - **Validation**:
-  - Cron expression: Validate format trước khi submit.
-  - Feed names: Match với feeds đã config trong home settings.
-  - Permissions: Chỉ owner/admin có thể CRUD.
+    - Cron expression: Validate format trước khi submit.
+    - Feed names: Match với feeds đã config trong home settings.
+    - Permissions: Chỉ owner/admin có thể CRUD.
 
 - **Realtime Updates**:
-  - Sau create/update/delete, refresh list rules.
-  - Có thể add Socket.IO events cho rule execution logs nếu cần.
+    - Sau create/update/delete, refresh list rules.
+    - Có thể add Socket.IO events cho rule execution logs nếu cần.
 
 - **Error Handling**:
-  - 400: Validation errors (invalid cron, missing fields).
-  - 403: Insufficient permissions.
-  - 404: Rule/home not found.
+    - 400: Validation errors (invalid cron, missing fields).
+    - 403: Insufficient permissions.
+    - 404: Rule/home not found.
 
 ### Troubleshooting
 
