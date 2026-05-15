@@ -1,262 +1,154 @@
-# IoT Application with MQTT & WebSocket
+# IoT Smart Home Backend
 
-Ứng dụng IoT sử dụng MQTT và WebSocket để nhận dữ liệu thời gian thực từ thiết bị, tích hợp Adafruit IO và MongoDB để lưu trữ dữ liệu cảm biến.
+Backend Node.js cho hệ thống nhà thông minh, dùng MQTT, Adafruit IO, MongoDB và Socket.IO để giám sát và điều khiển thiết bị theo thời gian thực.
 
----
+## Tổng quan
 
-## Tech Stack
+- Theo dõi và điều khiển thiết bị smart home theo thời gian thực.
+- Tích hợp MQTT với Adafruit IO để giao tiếp độ trễ thấp giữa server và phần cứng.
+- Lưu dữ liệu người dùng, home, thiết bị, trạng thái thiết bị và lịch sử thao tác trong MongoDB.
+- Phát realtime event theo từng home bằng Socket.IO, bao gồm online presence và cảnh báo ngưỡng.
+- Hỗ trợ phân quyền theo vai trò: `owner`, `member`, `guest`, và `admin`.
 
-- **Broker**: Adafruit IO (MQTT)
-- **Communication**: WebSocket, MQTT
-- **Database**: MongoDB
-- **Runtime**: Node.js
+## Công nghệ sử dụng
 
-## Installation
+- Node.js
+- Express
+- MongoDB + Mongoose
+- MQTT + Adafruit IO
+- Socket.IO
+- JWT Authentication
+
+## Tính năng chính
+
+- Đăng nhập, đăng ký, quên mật khẩu, đặt lại mật khẩu và lấy thông tin tài khoản hiện tại.
+- Quản lý home, thêm/xóa thành viên, và cập nhật vai trò thành viên.
+- Xem dữ liệu sensor, lịch sử feed, thống kê feed và metrics theo từng home.
+- Gửi lệnh điều khiển thiết bị qua MQTT cho các actuator được hỗ trợ.
+- Cập nhật ngưỡng nhiệt độ và độ ẩm để phát cảnh báo realtime.
+- API admin để quản lý người dùng và home ở cấp hệ thống.
+
+## Cấu trúc thư mục
+
+```text
+src/
+├── app.js
+├── config/
+├── controllers/
+├── models/
+├── mqtt/
+├── routes/
+├── services/
+├── socket/
+└── utils/
+
+middleware/
+```
+
+## Cài đặt
 
 ```bash
-# Clone repository
-git clone <repo-url>
-cd DADN
-
-# Install dependencies
 npm install
 ```
 
-## Configuration
+## Biến môi trường
 
-Tạo file `.env`:
+Tạo file `.env` với nội dung tối thiểu sau:
 
 ```env
-ADAFRUIT_USERNAME=your_username
-ADAFRUIT_KEY=your_key
-MQTT_BROKER=io.adafruit.com
-MONGODB_URI=mongodb://localhost:27017/iot_app
-WEBSOCKET_PORT=8080
+PORT=
+JWT_SECRET=
+MONGO_URL=
 ```
 
-## Usage
+Thông tin MQTT và Adafruit IO được lưu theo từng home trong MongoDB:
+
+```text
+aioUsername
+aioKey
+aioFeedIds
+```
+
+## Chạy ứng dụng
 
 ```bash
 npm start
 ```
 
-## Project Structure
+Trong môi trường phát triển:
 
-```
-.
-├── src/
-├── config/
-├── controllers/
-├── routes/
-├── models/
-├── mqtt/
-├── socket/
-├── utils/
-└── README.md
+```bash
+npm run dev
 ```
 
----
+## API chính
 
-## Section 1 — Authentication (Xác thực người dùng)
+### Auth
 
-Hệ thống cung cấp các API xác thực để đăng ký, đăng nhập và bảo vệ tài nguyên bằng JWT.
+- `POST /api/auth/login`
+- `POST /api/auth/signup`
+- `POST /api/auth/forgot-password`
+- `PATCH /api/auth/reset-password/:token`
+- `GET /api/auth/me`
 
-### Endpoints
+### Home
 
-#### Đăng ký tài khoản
+- `GET /api/homes`
+- `POST /api/homes/:homeId/members`
+- `GET /api/homes/:homeId/members`
+- `PATCH /api/homes/:homeId/members/:userId/role`
+- `DELETE /api/homes/:homeId/members/:userId`
 
-```
-POST /api/auth/register
-```
+### Sensor
 
-**Request body:**
-```json
-{
-  "username": "user01",
-  "email": "user01@example.com",
-  "password": "secret123"
-}
-```
+- `GET /api/homes/:homeId/sensor`
+- `GET /api/homes/:homeId/sensor/:feed`
+- `GET /api/homes/:homeId/sensor/:feed/history`
+- `GET /api/homes/:homeId/sensor/:feed/stats`
+- `GET /api/homes/:homeId/metrics`
+- `PATCH /api/homes/:homeId/settings/thresholds`
 
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Đăng ký thành công"
-}
-```
+### Device
 
----
+- `POST /api/homes/:homeId/device/command`
 
-#### Đăng nhập
+### Admin
 
-```
-POST /api/auth/login
-```
+- `GET /api/admin/users`
+- `POST /api/admin/homes/user/:userId`
+- `DELETE /api/admin/homes/:homeId`
 
-**Request body:**
-```json
-{
-  "email": "user01@example.com",
-  "password": "secret123"
-}
-```
+## Realtime events
 
-**Response:**
-```json
-{
-  "success": true,
-  "token": "<jwt_token>"
-}
-```
+Socket.IO được dùng để phát sự kiện realtime theo từng room của home.
 
-> Sử dụng token trả về trong header `Authorization: Bearer <token>` để gọi các API yêu cầu xác thực.
+### Client events
 
----
+- `join_room`
+- `leave_room`
 
-#### Đăng xuất
+### Server events
 
-```
-POST /api/auth/logout
-```
+- `room_joined`
+- `room_left`
+- `room_error`
+- `user_online`
+- `user_offline`
+- `mqtt_data`
+- `alert_triggered`
 
-**Headers:** `Authorization: Bearer <token>`
+## Collections trong MongoDB
 
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Đăng xuất thành công"
-}
-```
+- `users`
+- `homes`
+- `homeMembers`
+- `homeSettings`
+- `devices`
+- `deviceStates`
+- `deviceLogs`
 
----
+## Ghi chú
 
-## Section 2 — Device & Sensor APIs (Truy xuất và điều khiển thiết bị)
-
-Các API bên dưới cho phép lấy giá trị cảm biến, xem lịch sử dữ liệu, và gửi lệnh bật/tắt thiết bị thông qua MQTT.
-
-> **Available feeds:** `iot-temp`, `iot-humid`, `iot-fan`, `iot-light`, ...
-
----
-
-### Lấy toàn bộ giá trị hiện tại
-
-```
-GET /api/sensor
-```
-
-Trả về snapshot mới nhất của tất cả feeds.
-
-**Response:**
-```json
-{
-  "iot-temp": 30.5,
-  "iot-humid": 65,
-  "iot-fan": "0",
-  "iot-light": "1",
-  "updatedAt": "2024-06-01T08:00:00.000Z"
-}
-```
-
-
-### Lấy giá trị của một feed cụ thể
-
-```
-GET /api/sensor/:feed
-```
-
-| Param | Mô tả |
-|-------|-------|
-| `feed` | Tên feed, ví dụ: `iot-temp` |
-
-**Ví dụ:** `GET /api/sensor/iot-temp`
-
-**Response:**
-```json
-{
-  "feed": "iot-temp",
-  "value": 30.5,
-  "updatedAt": "2024-06-01T08:00:00.000Z"
-}
-```
-
-**Response (404 — feed không tồn tại):**
-```json
-{
-  "error": "Feed \"iot-xyz\" không tồn tại"
-}
-```
-
----
-
-### Lấy lịch sử dữ liệu của một feed
-
-```
-GET /api/sensor/:feed/history?limit=<n>
-```
-
-| Param | Mô tả |
-|-------|-------|
-| `feed` | Tên feed, ví dụ: `iot-temp` |
-| `limit` *(query)* | Số bản ghi trả về, mặc định `20` |
-
-**Ví dụ:** `GET /api/sensor/iot-temp/history?limit=5`
-
-**Response:**
-```json
-[
-  { "value": 30.5, "timestamp": "2024-06-01T08:00:00.000Z" },
-  { "value": 30.1, "timestamp": "2024-06-01T07:55:00.000Z" },
-  { "value": 29.8, "timestamp": "2024-06-01T07:50:00.000Z" }
-]
-```
-
-
-
----
-
-### Gửi lệnh điều khiển thiết bị (bật/tắt)
-
-```
-POST /api/device/command
-```
-
-Gửi lệnh xuống thiết bị thông qua MQTT (publish tới topic của feed tương ứng).
-
-**Request body:**
-```json
-{
-  "feed": "iot-fan",
-  "command": "1"
-}
-```
-
-| Giá trị `command` | Ý nghĩa |
-|-------------------|---------|
-| `"1"` | Bật thiết bị |
-| `"0"` | Tắt thiết bị |
-
-**Response:**
-```json
-{
-  "success": true,
-  "feed": "iot-fan",
-  "command": "1"
-}
-```
-
-**Response (400 — feed không hợp lệ):**
-```json
-{
-  "error": "Feed \"iot-xyz\" không hợp lệ"
-}
-```
-
-
-
----
-
-## License
-
-MIT
+- Mỗi home có thể dùng riêng bộ thông tin MQTT và danh sách feed Adafruit IO.
+- Dữ liệu MQTT được lưu vào trạng thái thiết bị và lịch sử log.
+- Nếu giá trị nhiệt độ hoặc độ ẩm vượt ngưỡng, hệ thống sẽ phát event cảnh báo realtime.
